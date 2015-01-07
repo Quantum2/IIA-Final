@@ -130,7 +130,9 @@ namespace IIA
 
             DateTimeOffset start = DateTimeOffset.Now;
             do{
-                for (int s = 0; s < mat.GetLength(0); s++)
+                int crossover_point = randy.Next(0,mat.GetLength(0));
+
+                for (int s = 0; s < mat.GetLength(0); s++)              //Selecionador por torneio 
                 {
                     for (int w = 0; w < mat.GetLength(1); w++) {
                         if(mat[s,w] == 0){
@@ -157,7 +159,43 @@ namespace IIA
                     contador++;
                 }while(escolhido == 0);
 
+                for (int a = 0; a <= crossover_point; a++)
+                {
+                    int temp;
+                    temp = mat[melhor_actual[0], a];
+                    mat[melhor_actual[0],a] = mat[melhor_actual[2],a];
+                    mat[melhor_actual[2],a] = temp;
+                }
+
+                mat = inverterBit(mat, melhor_actual);
+
+
+                
             } while (DateTimeOffset.Now - start < TimeSpan.FromSeconds(k));
+        }
+
+        private static int[,] inverterBit(int[,] mat, int[] melhor)
+        {
+            randy = new Random();
+            
+            if(mat[melhor[0],randy.Next(0,mat.GetLength(1))] == 1){
+                mat[melhor[0], randy.Next(0, mat.GetLength(1))] = 0;
+            }
+            else
+            {
+                mat[melhor[0], randy.Next(0, mat.GetLength(1))] = 1;
+            }
+
+            if (mat[melhor[2], randy.Next(0, mat.GetLength(1))] == 1)
+            {
+                mat[melhor[2], randy.Next(0, mat.GetLength(1))] = 0;
+            }
+            else
+            {
+                mat[melhor[2], randy.Next(0, mat.GetLength(1))] = 1;
+            }
+
+            return mat;
         }
 
         internal static void hib()
