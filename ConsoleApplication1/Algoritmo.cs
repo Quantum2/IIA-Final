@@ -107,7 +107,9 @@ namespace IIA
         public static IEnumerable<bool> ToEnumerable(this BitArray barray)
         {
             for (int i = 0; i < barray.Length; i++)
+            {
                 yield return barray[i];
+            }
         }
 
         public static int Fitness(BitArray barray)
