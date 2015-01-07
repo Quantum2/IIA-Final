@@ -14,6 +14,7 @@ namespace IIA
     {
         static List<int> lista;
         static Random randy;
+        public const int PROBABILIDADE = 30;
 
         public static void TrepaColinas(int[,] mat)
         {
@@ -117,9 +118,46 @@ namespace IIA
             return barray.ToEnumerable().Count(b => b);
         }
 
-        internal static void evo()
+        internal static void evo(int[,] mat)
         {
-            throw new NotImplementedException();
+            int k, contador = 0, escolhido = 0;
+            int[] melhor_actual;
+            melhor_actual = new int [3];
+            randy = new Random();
+            Console.Clear();
+            Console.WriteLine("Insira o tempo de execução do algoritmo em segundos : ");
+            k = Convert.ToInt32(Console.ReadLine());
+
+            DateTimeOffset start = DateTimeOffset.Now;
+            do{
+                for (int s = 0; s < mat.GetLength(0); s++)
+                {
+                    for (int w = 0; w < mat.GetLength(1); w++) {
+                        if(mat[s,w] == 0){
+                            contador++;
+                        }
+                    }
+
+                    if(contador > melhor_actual[1]){
+                        melhor_actual[0] = s;
+                        melhor_actual[1] = contador;
+                    }
+                    contador = 0;
+                }
+
+                do{
+                    if(contador >= mat.GetLength(0)){
+                        contador = 0;
+                    }
+                    int r = randy.Next(0,100);
+                    if(r <= PROBABILIDADE){
+                        melhor_actual[2] = contador;
+                        escolhido = 1;
+                    }
+                    contador++;
+                }while(escolhido == 0);
+
+            } while (DateTimeOffset.Now - start < TimeSpan.FromSeconds(k));
         }
 
         internal static void hib()

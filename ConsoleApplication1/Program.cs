@@ -19,7 +19,7 @@ namespace IIA
             Console.WriteLine("Escolha o tipo de algoritmo");
             Console.WriteLine("1 - Trepa Colinas");
             Console.WriteLine("2 - Algoritmo evolutivo");
-            Console.WriteLine("3 - Método hibrido");
+            Console.WriteLine("3 - Método híbrido");
             tipo = Console.ReadLine();
 
             switch(Convert.ToInt32(tipo))
@@ -30,9 +30,13 @@ namespace IIA
                     Algoritmo.TrepaColinas(matriz);
                     break;
                 case 2:
-                    Algoritmo.evo();
+                    Console.Clear();
+                    Console.WriteLine("Escolhido Algoritmo Evolutivo...");
+                    Algoritmo.evo(matriz);
                     break;
                 case 3:
+                    Console.Clear();
+                    Console.WriteLine("Escolhido Algoritmo híbrido...");
                     Algoritmo.hib();
                     break;
                 default:
