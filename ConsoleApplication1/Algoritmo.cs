@@ -155,7 +155,7 @@ namespace IIA
                     foreach (var n in this.Neighbours(current))
                     {
                         steepestAscentFitness = this.Fitness(n);
-                        if (Comparer.Default.Compare(steepestAscentFitness, currentFitness) > 0)
+                        if (Comparer.Default.Compare(currentFitness, steepestAscentFitness) > 0)
                         {
                             current = n;
                             currentFitness = steepestAscentFitness;
@@ -170,7 +170,7 @@ namespace IIA
                         }
                     }
 
-                    if (steepestAscentNeighbour != null && Comparer.Default.Compare(currentFitness, steepestAscentFitness) >= 0)
+                    if (steepestAscentNeighbour != null && Comparer.Default.Compare(steepestAscentFitness, currentFitness) >= 0)
                         current = steepestAscentNeighbour;
 
                 } while (DateTimeOffset.Now - start < timeout);
