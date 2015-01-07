@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using btl.generic;
+using GAF;
+using GAF.Operators;
 
 namespace IIA
 {
@@ -14,7 +17,7 @@ namespace IIA
     {
         static List<int> lista;
         static Random randy;
-        public const int PROBABILIDADE = 30;
+        public const int PROBABILIDADE = 50;
 
         public static void TrepaColinas(int[,] mat)
         {
@@ -120,17 +123,119 @@ namespace IIA
 
         internal static void evo(int[,] mat)
         {
-            int k, contador = 0, escolhido = 0;
+            const double crossoverProbability = 0.65;
+            const double mutationProbability = 0.08;
+            const int elitismPercentage = 5;
+
+            var population = new Population(0, mat.GetLength(1), false, false);
+
+            for (var p = 0; p < mat.GetLength(0); p++)
+            {
+                var chromosome = new Chromosome();
+                for (var g = 0; g < mat.GetLength(1); g++)
+                {
+                    chromosome.Genes.Add(new Gene(mat[p,g]));
+                }
+                population.Solutions.Add(chromosome);
+            }
+
+            //create the genetic operators 
+            var elite = new Elite(elitismPercentage);
+
+            var crossover = new Crossover(crossoverProbability, true)
+            {
+                CrossoverType = CrossoverType.SinglePoint
+            };
+
+            var mutation = new BinaryMutate(mutationProbability, true);
+
+            var ga = new GeneticAlgorithm(population, CalculateFitness);
+
+            //subscribe to the GAs Generation Complete event 
+            ga.OnGenerationComplete += ga_OnGenerationComplete;
+
+            //add the operators to the ga process pipeline 
+            ga.Operators.Add(elite);
+            ga.Operators.Add(crossover);
+            ga.Operators.Add(mutation);
+
+            //run the GA 
+            ga.Run(TerminateFunction);
+
+            Console.ReadLine();
+        }
+
+        private static double CalculateFitness(Chromosome chromosome)
+        {
+            double fitnessValue = -1;
+            if (chromosome != null)
+            {
+                //this is a range constant that is used to keep the x/y range between -100 and +100
+                var rangeConst = 200 / (System.Math.Pow(2, chromosome.Count / 2) - 1);
+
+                //get x and y from the solution
+                var x1 = Convert.ToInt32(chromosome.ToBinaryString(0, chromosome.Count / 2), 2);
+                var y1 = Convert.ToInt32(chromosome.ToBinaryString(chromosome.Count / 2, chromosome.Count / 2), 2);
+
+                //Adjust range to -100 to +100
+                var x = (x1 * rangeConst) - 100;
+                var y = (y1 * rangeConst) - 100;
+
+                //using binary F6 for fitness.
+                var temp1 = System.Math.Sin(System.Math.Sqrt(x * x + y * y));
+                var temp2 = 1 + 0.001 * (x * x + y * y);
+                var result = 0.5 + (temp1 * temp1 - 0.5) / (temp2 * temp2);
+
+                fitnessValue = 1 - result;
+            }
+            else
+            {
+                //chromosome is null
+                throw new ArgumentNullException("chromosome", "The specified Chromosome is null.");
+            }
+
+            return fitnessValue;
+        }
+
+        internal static bool TerminateFunction(Population population, int currentGeneration, long currentEvaluation) 
+        {
+            return currentGeneration > 1000;
+        }
+
+        private static void ga_OnGenerationComplete(object sender, GaEventArgs e)
+        {
+            //get the best solution 
+            var chromosome = e.Population.GetTop(1)[0];
+
+            //decode chromosome
+
+            //get x and y from the solution 
+            var x1 = Convert.ToInt32(chromosome.ToBinaryString(0, chromosome.Count / 2), 2);
+            var y1 = Convert.ToInt32(chromosome.ToBinaryString(chromosome.Count / 2, chromosome.Count / 2), 2);
+
+            //Adjust range to -100 to +100 
+            var rangeConst = 200 / (System.Math.Pow(2, chromosome.Count / 2) - 1);
+            var x = (x1 * rangeConst) - 100;
+            var y = (y1 * rangeConst) - 100;
+
+            //display the X, Y and fitness of the best chromosome in this generation 
+            Console.WriteLine("x:{0} y:{1} Fitness{2}", x, y, e.Population.MaximumFitness);
+        }
+
+        /*internal static void evo(int[,] mat)
+        {
+            int k, contador = 0, contador2, escolhido = 0, fit1, fit2, its = 0;
             int[] melhor_actual;
+            lista = new List<int>();
             melhor_actual = new int [3];
             randy = new Random();
             Console.Clear();
             Console.WriteLine("Insira o tempo de execução do algoritmo em segundos : ");
             k = Convert.ToInt32(Console.ReadLine());
-
+            Console.Clear();
             DateTimeOffset start = DateTimeOffset.Now;
             do{
-                int crossover_point = randy.Next(0,mat.GetLength(0));
+                int crossover_point = randy.Next(1, mat.GetLength(0));
 
                 for (int s = 0; s < mat.GetLength(0); s++)              //Selecionador por torneio 
                 {
@@ -168,11 +273,44 @@ namespace IIA
                 }
 
                 mat = inverterBit(mat, melhor_actual);
+                contador = 0;
+                contador2 = 0;
 
+                for(int q=0;q < mat.GetLength(1);q++){
+                    if(mat[melhor_actual[0], q] == 0){
+                        contador = contador + 1;
+                    }
+                    if(mat[melhor_actual[2], q] == 0){
+                        contador2 = contador2 + 1;
+                    }
+                }
 
-                
+                fit1 = contador;
+                fit2 = contador2;
+
+                if(fit1 > fit2){
+                    for (int q = 0; q < mat.GetLength(0); q++)
+                    {
+                        mat[melhor_actual[2], q] = mat[melhor_actual[0], q];
+                        Console.Write("{0}", mat[melhor_actual[2], q]);
+                    }
+                    Console.WriteLine(" ");
+                }
+                if (fit2 > fit1)
+                {
+                    for (int q = 0; q < mat.GetLength(0); q++)
+                    {
+                        mat[melhor_actual[0], q] = mat[melhor_actual[2], q];
+                        Console.Write("{0}", mat[melhor_actual[0], q]);
+                    }
+                    Console.WriteLine(" ");
+                }
+                its++;
             } while (DateTimeOffset.Now - start < TimeSpan.FromSeconds(k));
-        }
+
+            Console.WriteLine("Número de iterações : {0} p/s", its);
+            Console.ReadLine();
+        }*/
 
         private static int[,] inverterBit(int[,] mat, int[] melhor)
         {
