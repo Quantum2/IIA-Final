@@ -8,13 +8,13 @@ namespace IIA
 {
     class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
             string tipo;
             int[,] matriz;
 
             matriz = gerarMatriz();
-
+            
             Console.Clear();
             Console.WriteLine("Escolha o tipo de algoritmo");
             Console.WriteLine("1 - Trepa Colinas");
