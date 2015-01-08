@@ -25,12 +25,12 @@ namespace IIA
             fazerFicheiroLog(mat);
             lista = new List<int>();
             randy = new Random();
-            Console.Write("Insira o tempo de execução do algoritmo em segundos : ");
+            Console.Write("Insira as iterações a realizar: ");
             tempo = Convert.ToInt32(Console.ReadLine());
             Console.Clear();
             Console.WriteLine("Solução obtida: ");
             BitArray resultado = new BitArray(TCRunner(mat, tempo).Result);
-            Console.WriteLine("Número de iterações: {0} p/s", lista.Count/tempo);
+            Console.WriteLine("Número de iterações realizadas: {0}", lista.Count);
             Console.ReadLine();
             Console.Clear();
             Program.Main();
@@ -76,7 +76,7 @@ namespace IIA
         static async Task<BitArray> TCRunner(int[,] mat, int tempo)
         {
             var search = new HillClimber(() => RandomBitArray(mat), Neighbours, Fitness);
-            var optimized = await search.Optimize(TimeSpan.FromSeconds(tempo));
+            var optimized = await search.Optimize(tempo);
 
             return optimized;
         }
@@ -147,7 +147,7 @@ namespace IIA
             //create the genetic operators 
             var crossover = new Crossover(crossoverProbability, true)
             {
-                CrossoverType = CrossoverType.SinglePoint
+                CrossoverType = CrossoverType.DoublePoint
             };
 
             var mutation = new BinaryMutate(mutationProbability, true);
@@ -230,6 +230,7 @@ namespace IIA
         public Func<BitArray> RandomSolution { get; set; }
         public Func<BitArray, IEnumerable<BitArray>> Neighbours { get; set; }
         public Func<BitArray, int> Fitness { get; set; }
+        int contador = 0;
 
         public HillClimber(Func<BitArray> randomSolution, Func<BitArray, IEnumerable<BitArray>> neighbours, Func<BitArray, int> fitness)
         {
@@ -238,7 +239,7 @@ namespace IIA
             this.Fitness = fitness;
         }
 
-        public async Task<BitArray> Optimize(TimeSpan timeout)
+        public async Task<BitArray> Optimize(int its)
         {
             DateTimeOffset start = DateTimeOffset.Now;
             BitArray current = this.RandomSolution();
@@ -272,7 +273,9 @@ namespace IIA
                     if (steepestAscentNeighbour != null && Comparer.Default.Compare(steepestAscentFitness, currentFitness) >= 0)
                         current = steepestAscentNeighbour;
 
-                } while (DateTimeOffset.Now - start < timeout);
+                    contador++;
+
+                } while (contador < its);
 
                 return current;
             });
