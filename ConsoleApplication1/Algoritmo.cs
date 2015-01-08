@@ -147,7 +147,7 @@ namespace IIA
             //create the genetic operators 
             var crossover = new Crossover(crossoverProbability, true)
             {
-                CrossoverType = CrossoverType.DoublePoint
+                CrossoverType = CrossoverType.SinglePoint
             };
 
             var mutation = new BinaryMutate(mutationProbability, true);
